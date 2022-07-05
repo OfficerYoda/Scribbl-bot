@@ -50,8 +50,8 @@ public class ImageCoverter {
 		System.out.println("adjusted Colours");
 		
 		//paint the image
-		Painter painter = new Painter(pixelColors);
-		painter.paint();
+		LineDrawer painter = new LineDrawer(pixelColors);
+		painter.draw();
 		
 		System.out.println("End all");
 	}
@@ -70,6 +70,7 @@ public class ImageCoverter {
 		//if not valid file, delete file and wait for valid file
 		if(!validFileTypesList.contains(fileType)) {
 			folder.listFiles()[0].delete();
+			System.out.println("Invalid File");
 			return waitTillValidFile(folder, validFileTypes);
 		}
 

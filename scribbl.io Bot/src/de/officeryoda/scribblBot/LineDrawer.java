@@ -5,20 +5,21 @@ import java.awt.Color;
 import java.awt.Point;
 import java.awt.Robot;
 import java.awt.event.InputEvent;
+import java.util.ArrayList;
 
 // 83 63 image resolution
-public class Painter {
+public class LineDrawer {
 
 	final Robot robot;
 	final Color[][] pixelColors;
 
-	public Painter(Color[][] pixelColors) throws AWTException {
+	public LineDrawer(Color[][] pixelColors) throws AWTException {
 		this.pixelColors = pixelColors;
 		this.robot = new Robot();
 		System.out.println("created painter");
 	}
 
-	public void paint() {
+	public void draw() {
 		System.out.println("started painting");
 
 		Color previousColor = new Color(42, 42, 42);
@@ -33,7 +34,7 @@ public class Painter {
 				if(clr.equals(ScribblColors.White)) continue;
 
 				//only switch colors if its a different color
-				if(!previousColor.equals(clr) && !isNoise(x, y)) {
+				if(!previousColor.equals(clr) && !isNoiseByClosePixels(x, y, 2)) {
 					//select Color
 					Point point = ScribblColors.getColorLocation(clr);
 					robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
@@ -55,14 +56,60 @@ public class Painter {
 			crntY = 220 + (y + 1) * 10;
 			robot.mouseMove(500, crntY);
 		}
-
+		robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+		
 		System.out.println("End paint");
 	}
 
-	private boolean isNoise(int x, int y) {
+	private boolean isNoiseByClosePixels(int x, int y, int maxClosePixel) {
 		Color clr = pixelColors[x][y];
-		return !(pixelColor(x + 1, y).equals(clr) || pixelColor(x, y + 1).equals(clr) ||
-				pixelColor(x - 1, y).equals(clr) || pixelColor(x, y - 1).equals(clr));
+		int closeColor = 0;
+		closeColor += pixelColor(x - 1, y + 1).equals(clr) ? 1 : 0;
+		closeColor += pixelColor(x	  , y + 1).equals(clr) ? 1 : 0;
+		closeColor += pixelColor(x + 1, y + 1).equals(clr) ? 1 : 0;
+		closeColor += pixelColor(x + 1, y	 ).equals(clr) ? 1 : 0;
+		closeColor += pixelColor(x + 1, y - 1).equals(clr) ? 1 : 0;
+		closeColor += pixelColor(x	  , y - 1).equals(clr) ? 1 : 0;
+		closeColor += pixelColor(x - 1, y - 1).equals(clr) ? 1 : 0;
+		closeColor += pixelColor(x - 1, y	 ).equals(clr) ? 1 : 0;
+		return closeColor < maxClosePixel;
+	}
+	
+	private boolean isNoiseByAverageColor(int x, int y, int maxDistance) {
+		Color clr = pixelColors[x][y];
+		
+		ArrayList<Color> closePixel = new ArrayList<>();
+		closePixel.add(pixelColor(x - 1, y + 1));
+		closePixel.add(pixelColor(x	   , y + 1));
+		closePixel.add(pixelColor(x + 1, y + 1));
+		closePixel.add(pixelColor(x + 1, y	  ));
+		closePixel.add(pixelColor(x + 1, y - 1));
+		closePixel.add(pixelColor(x	   , y - 1));
+		closePixel.add(pixelColor(x - 1, y - 1));
+		closePixel.add(pixelColor(x - 1, y	  ));
+		/**
+		 * Pixels get added in this pattern:
+		 * 
+		 * 1 2 3
+		 * 8   4
+		 * 7 6 5
+		 */
+		
+		
+		int red = 0;
+		int green = 0;
+		int blue = 0;
+		for (Color color : closePixel) {
+			red += color.getRed();
+			green += color.getGreen();
+			blue += color.getBlue();
+		}
+		
+		red 	/= 	8;
+		green 	/= 	8;
+		blue 	/= 	8;
+		
+		return colorDistance(clr, new Color(red, green, blue)) > maxDistance;
 	}
 
 	private Color pixelColor(int x, int y) {
@@ -85,5 +132,15 @@ public class Painter {
 
 		robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
 		robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+	}
+
+	private double colorDistance(Color c1, Color c2) {
+		int r1 = c1.getRed();
+		int r2 = c2.getRed();
+		int g1 = c1.getGreen();
+		int g2 = c2.getGreen();
+		int b1 = c1.getBlue();
+		int b2 = c2.getBlue();
+		return Math.sqrt((r1-r2)*(r1-r2) + (g1-g2)*(g1-g2) + (b1-b2)*(b1-b2));
 	}
 }
