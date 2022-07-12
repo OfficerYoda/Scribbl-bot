@@ -5,7 +5,6 @@ import java.awt.Color;
 import java.awt.Point;
 import java.awt.Robot;
 import java.awt.event.InputEvent;
-import java.util.ArrayList;
 
 // 83 63 image resolution
 public class LineDrawer {
@@ -74,7 +73,7 @@ public class LineDrawer {
 		closeColor += pixelColor(x - 1, y	 ).equals(clr) ? 1 : 0;
 		return closeColor < maxClosePixel;
 	}
-	
+/*
 	private boolean isNoiseByAverageColor(int x, int y, int maxDistance) {
 		Color clr = pixelColors[x][y];
 		
@@ -89,11 +88,10 @@ public class LineDrawer {
 		closePixel.add(pixelColor(x - 1, y	  ));
 		/**
 		 * Pixels get added in this pattern:
-		 * 
 		 * 1 2 3
 		 * 8   4
 		 * 7 6 5
-		 */
+		 /
 		
 		
 		int red = 0;
@@ -111,7 +109,7 @@ public class LineDrawer {
 		
 		return colorDistance(clr, new Color(red, green, blue)) > maxDistance;
 	}
-
+*/
 	private Color pixelColor(int x, int y) {
 		if(x >= pixelColors.length) x = pixelColors.length - 1;
 		if(x < 0) x = 0;
@@ -121,26 +119,11 @@ public class LineDrawer {
 		return pixelColors[x][y];
 	}
 
-	private Color getNextColor(int x, int y) {
-		if(x < pixelColors.length - 1) return pixelColors[x + 1][y];
-		else if(y < pixelColors[x].length - 1) return pixelColors[0][y + 1];
-		else return ScribblColors.Black;
-	}
 
 	private void leftClick() {
 		try { Thread.sleep(2); } catch (InterruptedException e) { e.printStackTrace(); }
 
 		robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
 		robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
-	}
-
-	private double colorDistance(Color c1, Color c2) {
-		int r1 = c1.getRed();
-		int r2 = c2.getRed();
-		int g1 = c1.getGreen();
-		int g2 = c2.getGreen();
-		int b1 = c1.getBlue();
-		int b2 = c2.getBlue();
-		return Math.sqrt((r1-r2)*(r1-r2) + (g1-g2)*(g1-g2) + (b1-b2)*(b1-b2));
 	}
 }

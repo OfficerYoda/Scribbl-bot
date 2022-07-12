@@ -1,6 +1,5 @@
 package de.officeryoda.scribblBot;
 
-import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -21,12 +20,13 @@ public class ImageCoverter {
 	public static void main(String[] args) {
 		try {
 			new ImageCoverter();
-		} catch (IOException | AWTException e) {
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	public ImageCoverter() throws IOException, AWTException {
+	public ImageCoverter() throws Exception {
 		System.out.println("Start");
 
 		//rename all Folder with name latest
@@ -38,11 +38,11 @@ public class ImageCoverter {
 		System.out.println("Folder created");
 		
 		//get a valid File
-		String imagePath = waitTillValidFile(folder, ".jpg", ".png");
+		BufferedImage inputImage = waitTillValidFile(folder, ".jpg", ".png");
 		System.out.println("valid File");
 		
 		//adjust resolution
-		BufferedImage outputImage = resize(imagePath, basePath + "latest\\output.jpg", 83, 63);
+		BufferedImage outputImage = resize(inputImage, basePath + "latest\\output.jpg", 83, 63);
 		System.out.println("resized");
 		
 		//make Pixels only specific colors
@@ -56,7 +56,7 @@ public class ImageCoverter {
 		System.out.println("End all");
 	}
 
-	private String waitTillValidFile(File folder, String... validFileTypes) {
+	private BufferedImage waitTillValidFile(File folder, String... validFileTypes) throws Exception {
 		List<String> validFileTypesList = Arrays.asList(validFileTypes);
 
 		//wait till File is in folder
@@ -74,7 +74,12 @@ public class ImageCoverter {
 			return waitTillValidFile(folder, validFileTypes);
 		}
 
-		return folder.listFiles()[0].getAbsolutePath();
+		try {
+			return ImageIO.read(folder.listFiles()[0]);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new Exception("Can't read image");
+		}
 	}
 
 	private boolean isDirEmpty(final Path directory) {
@@ -95,11 +100,7 @@ public class ImageCoverter {
 
 	}
 
-	private BufferedImage resize(String inputImagePath, String outputImagePath, int scaledWidth, int scaledHeight) throws IOException {
-		// reads input image
-		File inputFile = new File(inputImagePath);
-		BufferedImage inputImage = ImageIO.read(inputFile);
-
+	private BufferedImage resize(BufferedImage inputImage, String outputImagePath, int scaledWidth, int scaledHeight) throws IOException {
 		// creates output image
 		BufferedImage outputImage = new BufferedImage(scaledWidth, scaledHeight, inputImage.getType());
 
@@ -118,8 +119,7 @@ public class ImageCoverter {
 	}
 
 	private Color[][] adjustColours(BufferedImage image) throws IOException {
-		
-		Color[][] pixelColors = new Color[83][63];
+		Color[][] pixelColors = new Color[image.getWidth()][image.getHeight()];
 		
 		BufferedImage adjustedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
 
